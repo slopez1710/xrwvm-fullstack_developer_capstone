@@ -28,9 +28,8 @@ jobs:
       - name: Run Linter
         run: |
           echo "Running flake8 on all Python files..."
-          # flake8 handles recursion natively – no need for find/xargs
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude .git,__pycache__,venv,.venv,env,.tox,dist,build
-          # If the above is too strict, uncomment this line instead:
+          # If you want more lenient rules, you can change to:
           # flake8 . --max-line-length=127 --exclude .git,__pycache__,venv,.venv,env
           echo "Python linting completed."
 
@@ -47,12 +46,37 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install JSHint
-        run: npm install -g jshint
+      - name: Install ESLint
+        run: npm install -g eslint
+
+      - name: Create ESLint config (if not present)
+        run: |
+          if [ ! -f .eslintrc.json ]; then
+            echo '{
+              "env": {
+                "es6": true,
+                "node": true,
+                "browser": true
+              },
+              "extends": "eslint:recommended",
+              "parserOptions": {
+                "ecmaVersion": 2018
+              },
+              "rules": {
+                "indent": ["warn", 2],
+                "quotes": ["warn", "single"],
+                "semi": ["warn", "always"],
+                "no-unused-vars": "warn",
+                "no-console": "off"
+              }
+            }' > .eslintrc.json
+            echo "Created default .eslintrc.json"
+          else
+            echo "Using existing .eslintrc.json"
+          fi
 
       - name: Run Linter
         run: |
-          echo "Running JSHint on all JavaScript files..."
-          # -exec {} + handles large file lists safely and avoids xargs pitfalls
-          find . -name "*.js" -not -path "./.*" -not -path "*/node_modules/*" -exec jshint {} +
+          echo "Running ESLint on all JavaScript files..."
+          eslint . --ext .js --ignore-pattern "node_modules/*"
           echo "JavaScript linting completed."
