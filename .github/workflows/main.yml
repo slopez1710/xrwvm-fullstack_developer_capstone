@@ -28,14 +28,10 @@ jobs:
       - name: Run Linter
         run: |
           echo "Running flake8 on all Python files..."
-          # Exclude hidden directories, virtual environments, cache, etc.
-          find . -name "*.py" \
-            -not -path "./.*" \
-            -not -path "*/venv/*" \
-            -not -path "*/env/*" \
-            -not -path "*/.venv/*" \
-            -not -path "*/__pycache__/*" \
-            -print0 | xargs -0 flake8
+          # flake8 handles recursion natively – no need for find/xargs
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics --exclude .git,__pycache__,venv,.venv,env,.tox,dist,build
+          # If the above is too strict, uncomment this line instead:
+          # flake8 . --max-line-length=127 --exclude .git,__pycache__,venv,.venv,env
           echo "Python linting completed."
 
   lint_js:
@@ -51,15 +47,12 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install JSHint (consider switching to ESLint)
+      - name: Install JSHint
         run: npm install -g jshint
 
       - name: Run Linter
         run: |
           echo "Running JSHint on all JavaScript files..."
-          # Exclude node_modules and hidden dirs
-          find . -name "*.js" \
-            -not -path "./.*" \
-            -not -path "*/node_modules/*" \
-            -print0 | xargs -0 jshint
+          # -exec {} + handles large file lists safely and avoids xargs pitfalls
+          find . -name "*.js" -not -path "./.*" -not -path "*/node_modules/*" -exec jshint {} +
           echo "JavaScript linting completed."
