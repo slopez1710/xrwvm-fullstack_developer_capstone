@@ -28,12 +28,14 @@ jobs:
       - name: Run Linter
         run: |
           echo "Running flake8 on all Python files..."
-          PY_FILES=$(find . -name "*.py")
-          if [ -z "$PY_FILES" ]; then
-            echo "No Python files found, skipping lint."
-          else
-            echo "$PY_FILES" | xargs flake8
-          fi
+          # Exclude hidden dirs, venv, __pycache__, etc.
+          find . -name "*.py" \
+            -not -path "./.*" \
+            -not -path "*/venv/*" \
+            -not -path "*/env/*" \
+            -not -path "*/.venv/*" \
+            -not -path "*/__pycache__/*" \
+            -print0 | xargs -0 flake8
           echo "Python linting completed."
 
   lint_js:
@@ -49,18 +51,16 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install JSHint
+      - name: Install JSHint (consider switching to ESLint)
         run: npm install -g jshint
 
       - name: Run Linter
         run: |
           echo "Running JSHint on all JavaScript files..."
-          JS_FILES=$(find . -name "*.js")
-          if [ -z "$JS_FILES" ]; then
-            echo "No JavaScript files found, skipping lint."
-          else
-            echo "$JS_FILES" | xargs jshint
-          fi
+          # Exclude node_modules, hidden dirs
+          find . -name "*.js" \
+            -not -path "./.*" \
+            -not -path "*/node_modules/*" \
+            -print0 | xargs -0 jshint
           echo "JavaScript linting completed."
-
 
