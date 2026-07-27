@@ -28,7 +28,7 @@ jobs:
       - name: Run Linter
         run: |
           echo "Running flake8 on all Python files..."
-          # Exclude hidden dirs, venv, __pycache__, etc.
+          # Exclude hidden directories, virtual environments, cache, etc.
           find . -name "*.py" \
             -not -path "./.*" \
             -not -path "*/venv/*" \
@@ -57,10 +57,9 @@ jobs:
       - name: Run Linter
         run: |
           echo "Running JSHint on all JavaScript files..."
-          # Exclude node_modules, hidden dirs
+          # Exclude node_modules and hidden dirs
           find . -name "*.js" \
             -not -path "./.*" \
             -not -path "*/node_modules/*" \
             -print0 | xargs -0 jshint
           echo "JavaScript linting completed."
-
